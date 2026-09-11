@@ -1,0 +1,1 @@
+"""Adaptive Education backend package."""
