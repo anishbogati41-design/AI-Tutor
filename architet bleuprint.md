@@ -6,11 +6,12 @@
 
 ## 1. Scope and constraints
 
-This is a web-based adaptive education application for students, with an AI tutor and a small admin area. It is built around lessons, practice, static lesson-linked quizzes, adaptive learning signals, progress tracking, study plans, and accessibility preferences.
+This is a web-based adaptive education application for students, with an AI tutor and a small admin area. It is built around lessons, adaptive practice, learning signals, progress tracking, study plans, and accessibility preferences.
 
 Only approved functionality is in scope. In particular:
 
 - Text-to-speech is excluded.
+- Quizzes are excluded. Questions exist only for adaptive practice.
 - There is no human-teacher portal or multi-role permission system.
 - Recommendations are generated from current learning data and are not stored as a separate resource.
 - AI-generated practice questions are temporary; they are never written to the official question bank.
@@ -33,7 +34,7 @@ Next.js frontend
   v
 FastAPI backend
   |-- authentication and authorization
-  |-- lessons, topics, questions, quizzes, practice
+  |-- lessons, topics, questions, and adaptive practice
   |-- adaptive learning and progress
   |-- study-plan rules and AI-readable plan generation
   |-- AI tutor and AI practice help
@@ -81,7 +82,6 @@ frontend/src/
 │   │   ├── dashboard/
 │   │   ├── lessons/
 │   │   ├── practice/
-│   │   ├── quiz/
 │   │   ├── chat/
 │   │   ├── study-plan/
 │   │   └── profile/
@@ -95,7 +95,6 @@ frontend/src/
 ├── features/
 │   ├── lessons/
 │   ├── practice/
-│   ├── quiz/
 │   ├── chat/
 │   ├── progress/
 │   └── admin/
@@ -113,7 +112,6 @@ frontend/src/
 - Dashboard: current score, topic accuracy, mastery, weak topics, recent improvement, and study-plan preview.
 - Lessons: section-based navigation through introduction, explanation, example, and summary content.
 - Practice: one question at a time; after submission, show correctness, explanation, optional AI side panel, then the next question.
-- Quiz: one question at a time, with numbered navigation, previous/next controls, and final submission.
 - AI chat: ChatGPT-style layout with a conversation sidebar, previous chats, a new-chat action, streamed messages, and an input area.
 - Study plan: day/task cards.
 - Profile: name, email, and saved accessibility preferences.
@@ -150,7 +148,6 @@ backend/
 ├── lessons/
 ├── topics/
 ├── questions/
-├── quizzes/
 ├── adaptive/
 ├── progress/
 ├── study_plans/
@@ -175,10 +172,7 @@ Redis has no persistence requirement. PostgreSQL remains the durable system of r
 
 ### 5.2 Learning and adaptation rules
 
-- One shared question system supports practice and quiz questions.
-- Questions are typed as `MCQ`, `TRUE_FALSE`, or `SHORT_ANSWER`; their usage is `PRACTICE` or `QUIZ`.
-- Practice is adaptive; quizzes remain static.
-- A static quiz is lesson-linked: quiz questions are identified by the lesson and `question_usage = QUIZ`; no `quizzes` table is used.
+- Questions exist only for adaptive practice and are typed as `MCQ`, `TRUE_FALSE`, or `SHORT_ANSWER`.
 - The next practice question is selected by topic and a difficulty band appropriate to the student's mastery.
 - Global question difficulty is calculated from student results using:
   - 60% incorrect-answer rate;
@@ -208,9 +202,8 @@ Redis has no persistence requirement. PostgreSQL remains the durable system of r
 | `topics` | `id`, `name`, `parent_topic_id`, `description`. Self-referencing hierarchy for topics and subtopics. |
 | `lessons` | `id`, `title`, `description`, `subtopic_id`, `estimated_minutes`, `is_published`. Each lesson belongs primarily to one subtopic. |
 | `lesson_sections` | `id`, `lesson_id`, `section_type`, `title`, `content`, `position`. Ordered structured lesson content. |
-| `questions` | `id`, `lesson_id`, `topic_id`, `question_text`, `question_type`, `question_usage`, `difficulty_score`, `explanation`, `accepted_answers`. `accepted_answers` is PostgreSQL `TEXT[]` for short answers. |
+| `questions` | `id`, `lesson_id`, `topic_id`, `question_text`, `question_type`, `difficulty_score`, `explanation`, `accepted_answers`. `accepted_answers` is PostgreSQL `TEXT[]` for short answers. |
 | `question_options` | `id`, `question_id`, `option_text`, `is_correct`, `position`. Supports MCQ and True/False; True/False stores `True` and `False` here. |
-| `quiz_attempts` | `id`, `user_id`, `lesson_id`, `score`, `total_questions`, `correct_answers`, `response_time_seconds`, `started_at`, `completed_at`. One row per completed quiz attempt. |
 | `practice_attempts` | `id`, `user_id`, `lesson_id`, `correct_count`, `total_count`. Summary-level adaptive-practice history. |
 | `mastery` | `id`, `user_id`, `topic_id`, `mastery_percentage`, `mastery_label`, `updated_at`. Current mastery only. |
 | `weak_topics` | `id`, `user_id`, `topic_id`, `accuracy`, `attempt_count`, `average_difficulty`. Stored weak-topic state and supporting metrics. |
@@ -258,9 +251,6 @@ GET  /topics/{id}/subtopics
 GET  /lessons/{id}/practice
 GET  /lessons/{id}/practice/next
 POST /practice/{question_id}/answer
-
-POST /lessons/{id}/quiz/start
-POST /lessons/{id}/quiz/submit
 
 GET  /progress
 GET  /study-plan
@@ -383,15 +373,63 @@ GitHub Actions is the approved CI/CD system. The pipeline should:
 4. Apply the raw Kubernetes manifests.
 5. Run the migration Job and verify rollout readiness.
 
-## 11. Implementation sequence
+## 11. Implementation phases
 
-1. Create PostgreSQL schema and Redis session/rate-limit integration.
-2. Build authentication, `/auth/me`, user profile, preferences, and backend authorization.
-3. Implement topics, lessons, lesson sections, and admin content CRUD.
-4. Implement shared questions, answer evaluation, static lesson quizzes, and practice summaries.
-5. Implement mastery, weak-topic updates, and adaptive next-question selection.
-6. Build student pages and admin pages, then connect them through TanStack Query and `lib/api.ts`.
-7. Add persistent conversations, SSE AI chat, practice AI help, rate limits, and cost controls.
-8. Build study-plan persistence and refresh logic.
-9. Add Compose health checks and environment separation.
-10. Deploy the one-replica MVP to Kubernetes through GitHub Actions.
+Each phase has its own file under `phases/`. That file records the approved scope, dependencies, implementation checklist, validation, and handoff state so work can continue safely in a later session. Complete and report one phase before starting the next. Keep commits aligned with completed, reviewable units of work.
+
+### Phase 1 — Backend and persistence foundation
+
+- Create the feature-based FastAPI backend structure and application entry point.
+- Define local and production configuration inputs without committing secrets.
+- Add PostgreSQL connectivity and migrations for the approved durable schema.
+- Add Redis connectivity restricted to sessions, AI rate limits, and daily AI usage counters.
+- Add Python logging plus backend, PostgreSQL, and Redis health checks.
+- Add focused foundation tests and local backend documentation.
+- Add the Docker build and local runtime needed to verify the backend foundation.
+
+### Phase 2 — Authentication and users
+
+- Build registration, login, logout, `/auth/me`, profile, and accessibility-preference endpoints.
+- Store opaque sessions in Redis and send the identifier through an HTTP-only secure cookie.
+- Enforce authenticated and administrator access in FastAPI using `is_admin`.
+
+### Phase 3 — Topics, lessons, and admin content
+
+- Implement hierarchical topics, lessons, and ordered lesson sections.
+- Implement student read endpoints and administrator content CRUD.
+
+### Phase 4 — Questions and adaptive practice records
+
+- Implement practice questions, options, answer evaluation, and practice summaries.
+- Support `MCQ`, `TRUE_FALSE`, and `SHORT_ANSWER` without any quiz resource or workflow.
+- Implement administrator question CRUD.
+
+### Phase 5 — Progress and adaptation
+
+- Implement mastery labels, weak-topic updates, global question-difficulty calculation, and adaptive next-question selection.
+- Implement the combined student progress payload and admin student-progress APIs.
+
+### Phase 6 — Frontend applications
+
+- Build the approved student and admin pages, excluding quizzes and text-to-speech.
+- Connect the frontend through TanStack Query and the credential-enabled `lib/api.ts` fetch wrapper.
+
+### Phase 7 — AI tutor and conversations
+
+- Add persistent conversations, SSE AI chat, practice-specific AI help, explanation styles, and educational-only safeguards.
+- Enforce short-window rate limits, daily usage counters, and per-answer token limits.
+- Keep generated practice questions temporary and prevent old conversations from becoming automatic long-term memory.
+
+### Phase 8 — Study plans
+
+- Add study-plan persistence, ordered plan items, completion state, and refresh logic.
+- Generate recommendations from current learning data without storing a separate recommendation resource.
+
+### Phase 9 — Local production readiness
+
+- Complete the four-service Docker Compose environment, pinned images, health checks, environment separation, and production execution setups.
+
+### Phase 10 — Kubernetes and delivery
+
+- Add the one-replica raw Kubernetes deployment, managed PostgreSQL integration, in-cluster nonpersistent Redis, TLS Ingress, migration Job, and resource controls.
+- Add the GitHub Actions test, image publishing, migration, deployment, and rollout-verification pipeline.
