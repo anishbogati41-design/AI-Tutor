@@ -57,7 +57,7 @@ curl --fail http://localhost:8000/health/ready
 
 ## Handoff state
 
-Status: Implemented and verified; awaiting approval to stage and commit.
+Status: Complete. Committed locally in `477a7db`.
 
 ### Delivered
 
@@ -94,4 +94,4 @@ Status: Implemented and verified; awaiting approval to stage and commit.
 
 The approved global question-difficulty formula uses per-question correctness, response time, and attempt reliability. The current source-of-truth schema stores only lesson-level practice summaries. Before Phase 4, the blueprint must define how the per-question measurements are retained or aggregated. Phase 1 does not invent an additional table or field.
 
-No Phase 1 changes may be staged or committed without explicit user approval. Do not push or merge these changes.
+Phase 1 was staged and committed with explicit user approval.

@@ -33,19 +33,19 @@ Implementation status values:
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `POST` | `/auth/register` | Public | 2 | Planned | Create a student account with email and password. |
-| `POST` | `/auth/login` | Public | 2 | Planned | Authenticate credentials, create a Redis session, and set the secure session cookie. |
-| `POST` | `/auth/logout` | Session | 2 | Planned | Delete the Redis session and clear the session cookie. |
-| `GET` | `/auth/me` | Session | 2 | Planned | Resolve the current authenticated identity and administrator flag. |
+| `POST` | `/auth/register` | Public | 2 | Implemented | Create a student account with email and password. |
+| `POST` | `/auth/login` | Public | 2 | Implemented | Authenticate credentials, create a Redis session, and set the secure session cookie. |
+| `POST` | `/auth/logout` | Session | 2 | Implemented | Delete the Redis session and clear the session cookie. |
+| `GET` | `/auth/me` | Session | 2 | Implemented | Resolve the current authenticated identity and administrator flag. |
 
 ## User profile endpoints
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `GET` | `/users/me` | Session | 2 | Planned | Return the current user's profile. |
-| `PUT` | `/users/me` | Session | 2 | Planned | Update the current user's approved profile fields. |
-| `GET` | `/users/me/preferences` | Session | 2 | Planned | Return saved accessibility preferences. |
-| `PUT` | `/users/me/preferences` | Session | 2 | Planned | Update `font_size`, `readable_mode`, `high_contrast`, and `dyslexia_mode`. |
+| `GET` | `/users/me` | Session | 2 | Implemented | Return the current user's profile. |
+| `PUT` | `/users/me` | Session | 2 | Implemented | Update the current user's approved profile fields. |
+| `GET` | `/users/me/preferences` | Session | 2 | Implemented | Return saved accessibility preferences. |
+| `PUT` | `/users/me/preferences` | Session | 2 | Implemented | Update `font_size`, `readable_mode`, `high_contrast`, and `dyslexia_mode`. |
 
 ## Topic and lesson endpoints
 
@@ -119,7 +119,8 @@ Both AI endpoints are subject to the per-user short-window request limit, daily 
 
 - 2 implemented service endpoints.
 - 4 generated documentation endpoints.
-- 37 planned product endpoints.
+- 8 implemented product endpoints.
+- 29 planned product endpoints.
 - 43 endpoint paths in total.
 
 No quiz, account-deletion, recommendation-resource, text-to-speech, teacher-portal, or expanded role-management endpoint is approved.

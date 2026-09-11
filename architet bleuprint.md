@@ -392,6 +392,8 @@ Each phase has its own file under `phases/`. That file records the approved scop
 - Build registration, login, logout, `/auth/me`, profile, and accessibility-preference endpoints.
 - Store opaque sessions in Redis and send the identifier through an HTTP-only secure cookie.
 - Enforce authenticated and administrator access in FastAPI using `is_admin`.
+- Initialize the Next.js frontend foundation and implement the registration, login, logout, profile, and accessibility-preference interfaces.
+- Use TanStack Query, React Hook Form, Zod, and the credential-enabled `lib/api.ts` wrapper for this authentication surface.
 
 ### Phase 3 — Topics, lessons, and admin content
 
@@ -411,7 +413,7 @@ Each phase has its own file under `phases/`. That file records the approved scop
 
 ### Phase 6 — Frontend applications
 
-- Build the approved student and admin pages, excluding quizzes and text-to-speech.
+- Build the remaining approved student and admin pages, excluding quizzes and text-to-speech.
 - Connect the frontend through TanStack Query and the credential-enabled `lib/api.ts` fetch wrapper.
 
 ### Phase 7 — AI tutor and conversations

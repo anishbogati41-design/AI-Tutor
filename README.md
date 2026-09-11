@@ -8,12 +8,15 @@ The complete approved endpoint catalog is documented in [api.md](api.md).
 
 ## Implementation status
 
-Phase 1 builds the backend and persistence foundation. Its durable handoff document is [phases/phase-1.md](phases/phase-1.md).
+Phase handoff documents record scope, validation, and continuation state:
+
+- [Phase 1 — Backend and persistence foundation](phases/phase-1.md)
+- [Phase 2 — Authentication, users, and frontend auth surface](phases/phase-2.md)
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Backend and persistence foundation | Implemented; awaiting commit approval |
-| 2 | Authentication and users | Not started |
+| 1 | Backend and persistence foundation | Complete |
+| 2 | Authentication, users, and frontend auth surface | Implemented; awaiting commit approval |
 | 3 | Topics, lessons, and admin content | Not started |
 | 4 | Questions and adaptive practice records | Not started |
 | 5 | Progress and adaptation | Not started |
@@ -49,7 +52,30 @@ Stop the Phase 1 environment with:
 docker compose -f compose.phase1.yaml down
 ```
 
-The Phase 1 Compose file intentionally runs only the backend and its required data services. Phase 9 completes the blueprint's four-service environment after the Next.js frontend exists.
+The Phase 1 Compose file intentionally runs only the backend and its required data services. Phase 2 introduces the four-service environment; Phase 9 completes its production-readiness work.
+
+## Phase 2 local development
+
+Build and start the frontend, backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase2.yaml up --build -d --wait
+```
+
+The local services are available at:
+
+- Frontend: <http://localhost:3000>
+- Registration: <http://localhost:3000/register>
+- Login: <http://localhost:3000/login>
+- Profile and preferences: <http://localhost:3000/profile>
+- API documentation: <http://localhost:8000/docs>
+- Backend readiness: <http://localhost:8000/health/ready>
+
+Stop the Phase 2 environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase2.yaml down
+```
 
 ## Configuration
 
