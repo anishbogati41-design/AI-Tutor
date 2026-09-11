@@ -4,6 +4,8 @@ An adaptive education platform for students with structured lessons, adaptive pr
 
 The architecture source of truth is [architet bleuprint.md](architet%20bleuprint.md). Quizzes and text-to-speech are explicitly outside the approved scope.
 
+The complete approved endpoint catalog is documented in [api.md](api.md).
+
 ## Implementation status
 
 Phase 1 builds the backend and persistence foundation. Its durable handoff document is [phases/phase-1.md](phases/phase-1.md).
