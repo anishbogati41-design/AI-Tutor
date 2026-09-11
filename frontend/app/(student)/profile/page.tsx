@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError, apiRequest } from "@/lib/api";
@@ -82,15 +83,7 @@ export default function ProfilePage() {
         ["current-user"],
         (user) => (user ? { ...user, ...preferences } : user),
       );
-    },
-  });
-
-  const logout = useMutation({
-    mutationFn: () => apiRequest<void>("/auth/logout", { method: "POST" }),
-    onSuccess: () => {
-      queryClient.clear();
-      router.replace("/login");
-      router.refresh();
+      router.push("/lessons");
     },
   });
 
@@ -102,22 +95,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl px-5 py-10">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <AppShell>
+      <div className="mx-auto max-w-4xl">
+      <header>
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-700">
             Adaptive Education
           </p>
           <h1 className="mt-2 text-3xl font-bold">Profile and preferences</h1>
         </div>
-        <Button
-          type="button"
-          className="bg-slate-800 hover:bg-slate-950"
-          onClick={() => logout.mutate()}
-          disabled={logout.isPending}
-        >
-          {logout.isPending ? "Signing out…" : "Sign out"}
-        </Button>
       </header>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -220,11 +206,12 @@ export default function ProfilePage() {
               </p>
             )}
             <Button type="submit" disabled={updatePreferences.isPending}>
-              Save preferences
+              Save preferences and continue
             </Button>
           </form>
         </section>
       </div>
-    </main>
+      </div>
+    </AppShell>
   );
 }

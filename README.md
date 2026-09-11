@@ -2,7 +2,7 @@
 
 An adaptive education platform for students with structured lessons, adaptive practice, progress tracking, study plans, accessibility preferences, and an educational AI tutor. The main application API is a feature-based FastAPI backend backed by PostgreSQL and Redis.
 
-The architecture source of truth is [architet bleuprint.md](architet%20bleuprint.md). Quizzes and text-to-speech are explicitly outside the approved scope.
+The architecture source of truth is [Architet design.md](Architet%20design.md). Quizzes and text-to-speech are explicitly outside the approved scope.
 
 The complete approved endpoint catalog is documented in [api.md](api.md).
 
@@ -12,12 +12,13 @@ Phase handoff documents record scope, validation, and continuation state:
 
 - [Phase 1 — Backend and persistence foundation](phases/phase-1.md)
 - [Phase 2 — Authentication, users, and frontend auth surface](phases/phase-2.md)
+- [Phase 3 — Topics, lessons, and admin content](phases/phase-3.md)
 
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Backend and persistence foundation | Complete |
-| 2 | Authentication, users, and frontend auth surface | Implemented; awaiting commit approval |
-| 3 | Topics, lessons, and admin content | Not started |
+| 2 | Authentication, users, and frontend auth surface | Complete |
+| 3 | Topics, lessons, and admin content | Implemented and verified; awaiting Git approval |
 | 4 | Questions and adaptive practice records | Not started |
 | 5 | Progress and adaptation | Not started |
 | 6 | Frontend applications | Not started |
@@ -75,6 +76,22 @@ Stop the Phase 2 environment without removing PostgreSQL data:
 
 ```bash
 docker compose -f compose.phase2.yaml down
+```
+
+## Phase 3 local development
+
+Build and start the frontend, Phase 3 backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase3.yaml up --build -d --wait
+```
+
+The frontend lesson catalog is available at <http://localhost:3000/lessons>. The API documentation is at <http://localhost:8000/docs>, and backend readiness is at <http://localhost:8000/health/ready>.
+
+Stop the environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase3.yaml down
 ```
 
 ## Configuration

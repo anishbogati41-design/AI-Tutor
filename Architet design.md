@@ -2,7 +2,7 @@
 
 ## Download
 
-[Download this blueprint](architet%20bleuprint.md)
+[Download this blueprint](Architet%20design.md)
 
 ## 1. Scope and constraints
 
@@ -399,6 +399,7 @@ Each phase has its own file under `phases/`. That file records the approved scop
 
 - Implement hierarchical topics, lessons, and ordered lesson sections.
 - Implement student read endpoints and administrator content CRUD.
+- Connect the frontend authentication flow to the student lesson list and section-based lesson viewer.
 
 ### Phase 4 — Questions and adaptive practice records
 

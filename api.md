@@ -1,6 +1,6 @@
 # Adaptive Education API
 
-This document catalogs every approved API endpoint. The architecture source of truth is [architet bleuprint.md](architet%20bleuprint.md). Quizzes and text-to-speech are outside the API scope.
+This document catalogs every approved API endpoint. The architecture source of truth is [Architet design.md](Architet%20design.md). Quizzes and text-to-speech are outside the API scope.
 
 ## Conventions
 
@@ -51,11 +51,11 @@ Implementation status values:
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `GET` | `/lessons` | Session | 3 | Planned | List student-visible lessons. |
-| `GET` | `/lessons/{id}` | Session | 3 | Planned | Return one lesson and its ordered sections. |
-| `GET` | `/topics` | Session | 3 | Planned | List topics. |
-| `GET` | `/topics/{id}` | Session | 3 | Planned | Return one topic. |
-| `GET` | `/topics/{id}/subtopics` | Session | 3 | Planned | List the direct children of a topic. |
+| `GET` | `/lessons` | Session | 3 | Implemented | List published lessons for students and all lessons for administrators. Supports `search` and `topic_id` filters. |
+| `GET` | `/lessons/{id}` | Session | 3 | Implemented | Return one visible lesson and its ordered sections. |
+| `GET` | `/topics` | Session | 3 | Implemented | List topics. |
+| `GET` | `/topics/{id}` | Session | 3 | Implemented | Return one topic. |
+| `GET` | `/topics/{id}/subtopics` | Session | 3 | Implemented | List the direct children of a topic. |
 
 ## Adaptive practice endpoints
 
@@ -103,12 +103,12 @@ Both AI endpoints are subject to the per-user short-window request limit, daily 
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `POST` | `/admin/lessons` | Admin | 3 | Planned | Create a lesson with section-based content. |
-| `PUT` | `/admin/lessons/{id}` | Admin | 3 | Planned | Update a lesson and its sections. |
-| `DELETE` | `/admin/lessons/{id}` | Admin | 3 | Planned | Delete a lesson. |
-| `POST` | `/admin/topics` | Admin | 3 | Planned | Create a topic or subtopic. |
-| `PUT` | `/admin/topics/{id}` | Admin | 3 | Planned | Update a topic or subtopic. |
-| `DELETE` | `/admin/topics/{id}` | Admin | 3 | Planned | Delete a topic when its relationships allow deletion. |
+| `POST` | `/admin/lessons` | Admin | 3 | Implemented | Create a lesson with section-based content. |
+| `PUT` | `/admin/lessons/{id}` | Admin | 3 | Implemented | Update a lesson and atomically replace its sections. |
+| `DELETE` | `/admin/lessons/{id}` | Admin | 3 | Implemented | Delete a lesson. |
+| `POST` | `/admin/topics` | Admin | 3 | Implemented | Create a topic or subtopic. |
+| `PUT` | `/admin/topics/{id}` | Admin | 3 | Implemented | Update a topic or subtopic while preventing hierarchy cycles. |
+| `DELETE` | `/admin/topics/{id}` | Admin | 3 | Implemented | Delete a topic when its relationships allow deletion. |
 | `POST` | `/admin/lessons/{id}/questions` | Admin | 4 | Planned | Create an adaptive-practice question for a lesson. |
 | `PUT` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Planned | Update an adaptive-practice question. |
 | `DELETE` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Planned | Delete an adaptive-practice question. |
@@ -119,8 +119,8 @@ Both AI endpoints are subject to the per-user short-window request limit, daily 
 
 - 2 implemented service endpoints.
 - 4 generated documentation endpoints.
-- 8 implemented product endpoints.
-- 29 planned product endpoints.
+- 19 implemented product endpoints.
+- 18 planned product endpoints.
 - 43 endpoint paths in total.
 
 No quiz, account-deletion, recommendation-resource, text-to-speech, teacher-portal, or expanded role-management endpoint is approved.

@@ -61,7 +61,7 @@ docker compose -f compose.phase2.yaml up -d --no-build --wait
 
 ## Handoff state
 
-Status: Implemented and verified; awaiting approval to stage and commit.
+Status: Complete and committed.
 
 ### Delivered
 
@@ -102,4 +102,4 @@ Status: Implemented and verified; awaiting approval to stage and commit.
 - Backend readiness: <http://localhost:8000/health/ready>
 - Buildx builder: `ai-tutor-builder`.
 
-No Phase 2 changes may be staged or committed without explicit user approval. Do not push or merge these changes.
+Phase 2 was committed and pushed with explicit user approval.

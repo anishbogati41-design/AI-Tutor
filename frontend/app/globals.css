@@ -12,6 +12,33 @@
   --danger: #b42318;
 }
 
+html.font-large {
+  font-size: 112.5%;
+}
+
+html.font-extra-large {
+  font-size: 125%;
+}
+
+html.high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+  --muted: #263244;
+  --border: #526071;
+  --primary: #173ca8;
+  --primary-hover: #0d286f;
+}
+
+html.readable-mode body {
+  line-height: 1.7;
+}
+
+html.dyslexia-mode body {
+  font-family: Verdana, Arial, sans-serif;
+  letter-spacing: 0.025em;
+  word-spacing: 0.08em;
+}
+
 * {
   box-sizing: border-box;
 }

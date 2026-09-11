@@ -36,7 +36,7 @@ export default function LoginPage() {
       }),
     onSuccess: (user) => {
       queryClient.setQueryData(["current-user"], user);
-      router.replace("/profile");
+      router.replace("/lessons");
       router.refresh();
     },
   });

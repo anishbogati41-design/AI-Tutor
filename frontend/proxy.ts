@@ -9,15 +9,19 @@ export function proxy(request: NextRequest) {
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname === "/register";
 
-  if (request.nextUrl.pathname.startsWith("/profile") && !hasSession) {
+  const isProtectedRoute =
+    request.nextUrl.pathname.startsWith("/profile") ||
+    request.nextUrl.pathname.startsWith("/lessons");
+
+  if (isProtectedRoute && !hasSession) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (isAuthRoute && hasSession) {
-    return NextResponse.redirect(new URL("/profile", request.url));
+    return NextResponse.redirect(new URL("/lessons", request.url));
   }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/profile/:path*"],
+  matcher: ["/login", "/register", "/profile/:path*", "/lessons/:path*"],
 };
