@@ -12,6 +12,12 @@ __pycache__/
 .pytest_cache/
 .venv/
 
+# Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
 # Editors and operating systems
 .DS_Store
 .idea/

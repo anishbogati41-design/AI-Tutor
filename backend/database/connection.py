@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
+from psycopg import AsyncConnection
 from psycopg_pool import AsyncConnectionPool
 
 logger = logging.getLogger(__name__)
@@ -23,6 +26,11 @@ class Database:
 
     async def close(self) -> None:
         await self._pool.close()
+
+    @asynccontextmanager
+    async def connection(self) -> AsyncIterator[AsyncConnection]:
+        async with self._pool.connection() as connection:
+            yield connection
 
     async def is_healthy(self) -> bool:
         try:

@@ -4,11 +4,14 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 
+from backend.auth.router import router as auth_router
 from backend.config import get_settings
 from backend.database.connection import Database
 from backend.logging.config import configure_logging
 from backend.redis_store.client import RedisStore
+from backend.users.router import router as users_router
 
 
 @asynccontextmanager
@@ -35,6 +38,16 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+settings = get_settings()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.frontend_url],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
+app.include_router(auth_router)
+app.include_router(users_router)
 
 
 @app.get("/health/live", tags=["health"])

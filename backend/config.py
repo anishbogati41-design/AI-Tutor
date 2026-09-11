@@ -35,6 +35,7 @@ class Settings:
     redis_url: str
     session_secret: str
     session_ttl_seconds: int
+    session_cookie_name: str
     cookie_secure: bool
     backend_url: str
     frontend_url: str
@@ -72,6 +73,7 @@ class Settings:
             redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
             session_secret=session_secret,
             session_ttl_seconds=_integer("SESSION_TTL_SECONDS", 86400),
+            session_cookie_name=os.getenv("SESSION_COOKIE_NAME", "adaptive_session"),
             cookie_secure=cookie_secure,
             backend_url=os.getenv("BACKEND_URL", "http://localhost:8000"),
             frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3000"),

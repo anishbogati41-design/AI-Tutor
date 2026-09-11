@@ -1,1 +1,1 @@
-"""Authentication feature package (implemented in Phase 2)."""
+"""Authentication and session feature."""

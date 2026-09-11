@@ -1,1 +1,1 @@
-"""User feature package (implemented in Phase 2)."""
+"""User profile and persistence feature."""
