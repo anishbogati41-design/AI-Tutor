@@ -10,6 +10,7 @@ import type { User } from "@/types/user";
 
 const navigation = [
   { href: "/lessons", label: "Lessons", icon: "▤" },
+  { href: "/practice", label: "Practice", icon: "✎" },
   { href: "/profile", label: "Profile", icon: "○" },
 ];
 
@@ -65,10 +66,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
         </div>
         <nav className="mt-4 flex gap-2 md:mt-8 md:block md:space-y-2" aria-label="Main navigation">
-          {navigation.map((item) => {
+          {[...navigation, ...(currentUser.data.is_admin ? [{ href: "/admin/questions", label: "Questions", icon: "◇" }] : [])].map((item) => {
             const active =
               pathname === item.href ||
-              (item.href === "/lessons" && pathname.startsWith("/lessons/"));
+              (item.href === "/lessons" &&
+                pathname.startsWith("/lessons/") &&
+                !pathname.endsWith("/practice"));
             return (
               <Link
                 key={item.href}

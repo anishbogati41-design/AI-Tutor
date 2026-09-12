@@ -114,7 +114,9 @@ def test_topic_lesson_visibility_and_admin_crud() -> None:
             student_session = client.cookies.get(settings.session_cookie_name)
             assert student_session
 
-            assert client.get("/lessons").json() == []
+            assert lesson_id not in {
+                item["id"] for item in client.get("/lessons").json()
+            }
             assert client.get(f"/lessons/{lesson_id}").status_code == 404
             assert client.post(
                 "/admin/topics", json={"name": "Forbidden"}

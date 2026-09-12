@@ -12,6 +12,7 @@ from backend.config import get_settings
 from backend.database.connection import Database
 from backend.logging.config import configure_logging
 from backend.lessons.router import router as lessons_router
+from backend.questions.router import router as questions_router
 from backend.redis_store.client import RedisStore
 from backend.topics.router import router as topics_router
 from backend.users.router import router as users_router
@@ -53,6 +54,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(topics_router)
 app.include_router(lessons_router)
+app.include_router(questions_router)
 app.include_router(admin_router)
 
 

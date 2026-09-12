@@ -66,6 +66,12 @@ export default function LessonPage() {
               {lesson.data.estimated_minutes} minutes
               {lesson.data.description ? ` · ${lesson.data.description}` : ""}
             </p>
+            <Link
+              href={`/lessons/${lesson.data.id}/practice`}
+              className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white hover:bg-blue-800"
+            >
+              Practice this lesson →
+            </Link>
           </header>
 
           {sections.length === 0 ? (

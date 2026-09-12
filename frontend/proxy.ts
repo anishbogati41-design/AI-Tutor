@@ -11,7 +11,9 @@ export function proxy(request: NextRequest) {
 
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/profile") ||
-    request.nextUrl.pathname.startsWith("/lessons");
+    request.nextUrl.pathname.startsWith("/lessons") ||
+    request.nextUrl.pathname.startsWith("/practice") ||
+    request.nextUrl.pathname.startsWith("/admin");
 
   if (isProtectedRoute && !hasSession) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -23,5 +25,12 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/profile/:path*", "/lessons/:path*"],
+  matcher: [
+    "/login",
+    "/register",
+    "/profile/:path*",
+    "/lessons/:path*",
+    "/practice/:path*",
+    "/admin/:path*",
+  ],
 };
