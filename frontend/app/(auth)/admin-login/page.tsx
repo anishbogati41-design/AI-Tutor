@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
     mutationFn: (values: AdminLoginValues) => apiRequest<User>("/auth/admin-login", { method: "POST", body: JSON.stringify(values) }),
     onSuccess: (user) => {
       queryClient.setQueryData(["current-user"], user);
-      router.replace("/admin/students");
+      router.replace("/admin/dashboard");
       router.refresh();
     },
   });
