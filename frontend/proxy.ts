@@ -15,6 +15,8 @@ export function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/lessons") ||
     request.nextUrl.pathname.startsWith("/practice") ||
+    request.nextUrl.pathname.startsWith("/chat") ||
+    request.nextUrl.pathname.startsWith("/study-plan") ||
     (request.nextUrl.pathname.startsWith("/admin") && !isAuthRoute);
 
   if (isProtectedRoute && !hasSession) {
@@ -32,6 +34,8 @@ export const config = {
     "/lessons/:path*",
     "/dashboard/:path*",
     "/practice/:path*",
+    "/chat/:path*",
+    "/study-plan/:path*",
     "/admin/:path*",
   ],
 };

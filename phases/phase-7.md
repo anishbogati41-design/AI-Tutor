@@ -1,8 +1,8 @@
 # Phase 7 — AI tutor and conversations
 
-Status: On hold until Phase 6 is complete
+Status: Implemented and verified
 
-Owner: Collaborating developer
+Owner: Primary implementation
 
 ## Goal
 
@@ -10,10 +10,10 @@ Implement the approved educational AI tutor, persistent owned conversations, str
 
 ## Dependencies
 
-- Begin from the reviewed and committed Phase 5 baseline.
+- Begin from the reviewed and committed Phase 6 baseline.
 - PostgreSQL already contains the approved `conversations` and `messages` tables.
 - Redis is restricted to sessions, short-window AI rate limits, and daily AI usage counters.
-- The OpenAI API is the only approved AI provider.
+- Keep the approved `AIProvider` abstraction, with Ollama as the default local provider and OpenAI as an optional provider.
 - Phase 7 may proceed alongside Phase 6 on a separate branch or worktree, then integrate after both branches pass their checks.
 
 ## Backend scope
@@ -52,7 +52,7 @@ Implement the approved educational AI tutor, persistent owned conversations, str
 - Do not add WebSockets; chat streaming uses SSE.
 - Do not store browser bearer tokens; authentication remains the Redis-backed HTTP-only session cookie.
 - Do not persist generated practice questions in the official question bank.
-- Do not introduce vector databases, background queues, additional AI providers, long-term memory, text-to-speech, or quizzes.
+- Do not introduce vector databases, background queues, providers beyond Ollama and OpenAI, long-term memory, text-to-speech, or quizzes.
 - Do not implement study plans; those belong to Phase 8.
 
 ## File ownership and coordination
@@ -67,7 +67,7 @@ Implement the approved educational AI tutor, persistent owned conversations, str
 1. Define conversation/message contracts and ownership errors.
 2. Implement PostgreSQL conversation persistence and REST endpoints.
 3. Implement Redis-backed AI counters using only the approved key purposes.
-4. Implement the OpenAI client boundary and educational prompt safeguards.
+4. Implement Ollama and OpenAI behind the shared provider boundary and educational prompt safeguards.
 5. Implement SSE chat streaming and final assistant-message persistence.
 6. Implement contextual practice help.
 7. Build chat routes and streamed message UI.
@@ -80,12 +80,32 @@ Implement the approved educational AI tutor, persistent owned conversations, str
 - Test conversation ownership and administrator/student authentication boundaries.
 - Test create/list/read/message/delete behavior with PostgreSQL.
 - Test short-window and daily Redis counters and token limits.
-- Test SSE event order, stream completion, persistence, and upstream failure behavior with a mocked OpenAI boundary.
+- Test SSE event order, stream completion, persistence, and upstream failure behavior with a mocked provider boundary.
 - Verify that one conversation never receives another conversation's history.
 - Verify generated practice content is absent from the official question tables.
 - Run backend unit/integration tests, frontend typecheck, and the production build.
-- Build Phase 7 development and production images with `ai-tutor-builder` and run the local four-service stack.
+- Build the Phase 7 images and run the local five-service stack, including Ollama with `qwen3:4b`.
 
 ## Git handoff
 
 Do not stage or commit without the assigned developer's explicit approval. Do not push or merge unless separately requested by the repository owner.
+
+## Delivery summary
+
+- Added owned PostgreSQL conversation and message persistence through all five approved REST endpoints.
+- Added native Ollama and optional OpenAI Responses API implementations behind the existing provider abstraction, explicit environment selection with no fallback, response-token caps, educational instructions, explanation styles, and safe upstream-error handling. OpenAI provider-side storage is disabled.
+- Added Redis-backed per-user short-window and daily AI enforcement using the existing approved counter keys.
+- Added SSE chat streaming, active-conversation-only context, completed assistant-message persistence, and practice help limited to the requested lesson and question.
+- Added `/chat`, `/chat/{id}`, conversation history and deletion, incremental SSE rendering, AI tutor navigation, and the practice screen's slide-in AI help panel.
+- Updated configuration templates, API documentation, README instructions, and the Phase 7 Compose stack without adding a database migration or any excluded capability.
+
+## Validation result
+
+- Backend unit and live PostgreSQL/Redis/Ollama integration suite: `33 passed`.
+- Frontend TypeScript check: passed.
+- Production Next.js build: passed and generated `/chat` plus `/chat/[id]`.
+- Phase 7 development backend/frontend images: built with Docker's default builder.
+- Local five-service stack: healthy at <http://localhost:3000> and <http://localhost:8000>, with the Ollama model stored in its named volume.
+- Unauthenticated `/chat` request: redirects to `/login`; authenticated ownership, streaming persistence, isolated conversation context, upstream failure, and temporary practice-help behavior are covered by integration tests.
+- Real local `qwen3:4b` completion and streaming: passed through the Ollama provider without a paid API request.
+- No OpenAI credential is stored in tracked files. Local AI output defaults to Ollama with `qwen3:4b`; `OPENAI_API_KEY` applies only when `AI_PROVIDER=openai` is explicitly selected.

@@ -34,6 +34,25 @@ export default function DashboardPage() {
           </section>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Weak topics</h2>{progress.data.weak_topics.length === 0 ? <p className="mt-4 text-slate-600">No weak topics recorded.</p> : <div className="mt-4 space-y-3">{progress.data.weak_topics.map((item) => <article key={item.topic_id} className="rounded-xl bg-amber-50 p-4"><h3 className="font-bold">{item.topic_name}</h3><p className="mt-1 text-sm text-slate-700">{item.accuracy}% accuracy across {item.attempt_count} attempts</p></article>)}</div>}<Link href="/practice" className="mt-5 inline-block font-semibold text-blue-700">Continue practice →</Link></section>
         </div>
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-bold">Study plan preview</h2>
+            <Link href="/study-plan" className="font-semibold text-blue-700">View plan →</Link>
+          </div>
+          {progress.data.study_plan_preview.length === 0 ? (
+            <p className="mt-4 text-slate-600">Generate a study plan to see your next learning tasks.</p>
+          ) : (
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {progress.data.study_plan_preview.map((item) => (
+                <article key={item.id} className="rounded-xl bg-blue-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-blue-700">{item.scheduled_date}</p>
+                  <h3 className="mt-2 font-bold">{item.title}</h3>
+                  {item.completed && <p className="mt-2 text-sm font-semibold text-emerald-700">Completed</p>}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </>}
     </AppShell>
   );

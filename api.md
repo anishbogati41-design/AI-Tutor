@@ -80,27 +80,31 @@ Submitting an answer updates the lesson summary, current topic mastery, weak-top
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `GET` | `/study-plan` | Session | 8 | Planned | Return the current saved study plan and ordered items. |
-| `POST` | `/study-plan/refresh` | Session | 8 | Planned | Regenerate the plan from current learning data. Recommendations are not stored as a separate resource. |
+| `GET` | `/study-plan` | Session | 8 | Implemented | Return the current user's saved plan and ordered items, or `null` before the first refresh. |
+| `POST` | `/study-plan/refresh` | Session | 8 | Implemented | Atomically replace the current user's plan items using published lessons, weak topics, mastery, and practice summaries. Recommendations are not stored as a separate resource. |
+
+Study-plan items expose only the approved durable fields: `id`, `study_plan_id`, `title`, `description`, `scheduled_date`, `position`, and read-only `completed`. Refresh prioritizes weak topics, then lower mastery and practice coverage. No item mutation endpoint or separate recommendation resource exists.
 
 ## AI tutor endpoints
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `POST` | `/ai/chat` | Session | 7 | Planned | Stream an educational AI tutor response through SSE. |
-| `POST` | `/lessons/{id}/ai-practice` | Session | 7 | Planned | Return practice-specific AI help using lesson and question context. |
+| `POST` | `/ai/chat` | Session | 7 | Implemented | Stream an educational AI tutor response through SSE and persist the completed assistant message. The matching user message must first be saved to the active conversation. |
+| `POST` | `/lessons/{id}/ai-practice` | Session | 7 | Implemented | Return practice-specific AI help using only the requested lesson and question context. |
 
 Both AI endpoints are subject to the per-user short-window request limit, daily request limit, and per-answer token limit. General chat and practice help remain separate capabilities.
+
+`AI_PROVIDER` explicitly selects `ollama` or `openai`; there is no automatic fallback. Local development defaults to Ollama with `qwen3:4b`, so `OPENAI_API_KEY` is not required. OpenAI remains available only when explicitly selected and configured.
 
 ## Conversation endpoints
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `POST` | `/conversations` | Session | 7 | Planned | Create a new conversation. Prior conversations are not injected as automatic long-term memory. |
-| `GET` | `/conversations` | Session | 7 | Planned | List the current user's conversations. |
-| `GET` | `/conversations/{id}` | Session | 7 | Planned | Return one owned conversation and its messages. |
-| `POST` | `/conversations/{id}/messages` | Session | 7 | Planned | Add a user message to an owned conversation and produce the assistant response. |
-| `DELETE` | `/conversations/{id}` | Session | 7 | Planned | Delete an owned conversation and its messages. |
+| `POST` | `/conversations` | Session | 7 | Implemented | Create a new conversation. Prior conversations are not injected as automatic long-term memory. |
+| `GET` | `/conversations` | Session | 7 | Implemented | List the current user's conversations. |
+| `GET` | `/conversations/{id}` | Session | 7 | Implemented | Return one owned conversation and its messages. |
+| `POST` | `/conversations/{id}/messages` | Session | 7 | Implemented | Add a user message to an owned conversation before requesting the streamed assistant response. |
+| `DELETE` | `/conversations/{id}` | Session | 7 | Implemented | Delete an owned conversation and its messages. |
 
 ## Administrator content endpoints
 
@@ -122,8 +126,8 @@ Both AI endpoints are subject to the per-user short-window request limit, daily 
 
 - 2 implemented service endpoints.
 - 4 generated documentation endpoints.
-- 29 implemented product endpoints.
-- 9 planned product endpoints.
+- 38 implemented product endpoints.
+- 0 planned product endpoints.
 - 44 endpoint paths in total.
 
 No quiz, account-deletion, recommendation-resource, text-to-speech, teacher-portal, or expanded role-management endpoint is approved.

@@ -17,6 +17,7 @@ Phase handoff documents record scope, validation, and continuation state:
 - [Phase 5 — Progress and adaptation](phases/phase-5.md)
 - [Phase 6 — Frontend applications](phases/phase-6.md)
 - [Phase 7 — AI tutor and conversations](phases/phase-7.md)
+- [Phase 8 — Study plans](phases/phase-8.md)
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -24,10 +25,10 @@ Phase handoff documents record scope, validation, and continuation state:
 | 2 | Authentication, users, and frontend auth surface | Complete |
 | 3 | Topics, lessons, and admin content | Complete |
 | 4 | Questions and adaptive practice records | Complete |
-| 5 | Progress and adaptation | Implemented and verified; awaiting Git approval |
-| 6 | Frontend applications | Implemented and verified; awaiting Git approval |
-| 7 | AI tutor and conversations | On hold |
-| 8 | Study plans | Not started |
+| 5 | Progress and adaptation | Complete |
+| 6 | Frontend applications | Complete |
+| 7 | AI tutor and conversations | Complete |
+| 8 | Study plans | Complete |
 | 9 | Local production readiness | Not started |
 | 10 | Kubernetes and delivery | Not started |
 
@@ -166,6 +167,29 @@ Stop the environment without removing PostgreSQL data:
 
 ```bash
 docker compose -f compose.phase6.yaml down
+```
+
+## Phase 7 local development
+
+Build and start the Phase 7 frontend, backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase7.yaml up --build -d --wait
+```
+
+The Phase 7 interfaces are available at:
+
+- AI tutor: <http://localhost:3000/chat>
+- Practice with contextual AI help: <http://localhost:3000/practice>
+- API documentation: <http://localhost:8000/docs>
+- Backend readiness: <http://localhost:8000/health/ready>
+
+The Compose stack starts Ollama and downloads `qwen3:4b` into a persistent named volume on its first run. Local development defaults to `AI_PROVIDER=ollama`, and no paid API key is required. To use the optional hosted provider, explicitly set `AI_PROVIDER=openai`, `OPENAI_API_KEY`, and `OPENAI_MODEL` only in the ignored `.env` file. There is no automatic fallback between providers. AI request limits, the daily usage limit, and the response-token limit also come from environment configuration.
+
+Stop the environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase7.yaml down
 ```
 
 ## Configuration

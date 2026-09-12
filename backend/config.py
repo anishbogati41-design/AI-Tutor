@@ -42,7 +42,11 @@ class Settings:
     admin_login_pin: str | None
     admin_seed_email: str | None
     admin_seed_password: str | None
+    ai_provider: str
+    ollama_base_url: str
+    ollama_model: str
     openai_api_key: str | None
+    openai_model: str
     ai_rate_limit_requests: int
     ai_rate_limit_window_seconds: int
     ai_daily_request_limit: int
@@ -53,6 +57,10 @@ class Settings:
         app_env = os.getenv("APP_ENV", "development").strip().lower()
         if app_env not in {"development", "test", "production"}:
             raise ValueError("APP_ENV must be development, test, or production")
+
+        ai_provider = os.getenv("AI_PROVIDER", "ollama").strip().lower()
+        if ai_provider not in {"ollama", "openai"}:
+            raise ValueError("AI_PROVIDER must be ollama or openai")
 
         session_secret = os.getenv(
             "SESSION_SECRET", "local-development-only-change-me"
@@ -83,7 +91,13 @@ class Settings:
             admin_login_pin=os.getenv("ADMIN_LOGIN_PIN") or None,
             admin_seed_email=os.getenv("ADMIN_SEED_EMAIL") or None,
             admin_seed_password=os.getenv("ADMIN_SEED_PASSWORD") or None,
+            ai_provider=ai_provider,
+            ollama_base_url=(
+                os.getenv("OLLAMA_BASE_URL") or "http://localhost:11434"
+            ).rstrip("/"),
+            ollama_model=os.getenv("OLLAMA_MODEL") or "qwen3:4b",
             openai_api_key=os.getenv("OPENAI_API_KEY") or None,
+            openai_model=os.getenv("OPENAI_MODEL", "gpt-5-mini"),
             ai_rate_limit_requests=_integer("AI_RATE_LIMIT_REQUESTS", 10),
             ai_rate_limit_window_seconds=_integer(
                 "AI_RATE_LIMIT_WINDOW_SECONDS", 60

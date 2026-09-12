@@ -1,1 +1,1 @@
-"""Study-plan feature package (implemented in Phase 8)."""
+"""Persistent personalized study plans."""

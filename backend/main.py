@@ -7,7 +7,9 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.admin.router import router as admin_router
+from backend.ai_teacher.router import router as ai_teacher_router
 from backend.auth.router import router as auth_router
+from backend.conversations.router import router as conversations_router
 from backend.config import get_settings
 from backend.database.connection import Database
 from backend.logging.config import configure_logging
@@ -15,6 +17,7 @@ from backend.lessons.router import router as lessons_router
 from backend.questions.router import router as questions_router
 from backend.progress.router import router as progress_router
 from backend.redis_store.client import RedisStore
+from backend.study_plans.router import router as study_plans_router
 from backend.topics.router import router as topics_router
 from backend.users.router import router as users_router
 
@@ -57,7 +60,10 @@ app.include_router(topics_router)
 app.include_router(lessons_router)
 app.include_router(questions_router)
 app.include_router(progress_router)
+app.include_router(study_plans_router)
 app.include_router(admin_router)
+app.include_router(conversations_router)
+app.include_router(ai_teacher_router)
 
 
 @app.get("/health/live", tags=["health"])

@@ -22,6 +22,9 @@ export default function PracticePage() {
   const queryClient = useQueryClient();
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<AnswerResult | null>(null);
+  const [aiPrompt, setAiPrompt] = useState("Give me a hint without revealing the answer.");
+  const [aiResponse, setAiResponse] = useState("");
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [sessionCounts, setSessionCounts] = useState({ correct: 0, total: 0 });
   const practice = useQuery({
     queryKey: ["practice", parameters.id],
@@ -48,17 +51,32 @@ export default function PracticePage() {
       queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
   });
+  const aiHelp = useMutation({
+    mutationFn: () =>
+      apiRequest<{ response: string }>(`/lessons/${parameters.id}/ai-practice`, {
+        method: "POST",
+        body: JSON.stringify({
+          question_id: question?.id,
+          prompt: aiPrompt,
+          explanation_style: "STEP_BY_STEP",
+        }),
+      }),
+    onSuccess: (data) => setAiResponse(data.response),
+  });
 
   useEffect(() => {
     setAnswer("");
     setResult(null);
     setSessionCounts({ correct: 0, total: 0 });
+    setAiResponse("");
   }, [parameters.id]);
 
   const nextQuestion = () => {
     setAnswer("");
     setResult(null);
     submit.reset();
+    aiHelp.reset();
+    setAiResponse("");
     queryClient.invalidateQueries({ queryKey: ["next-practice-question", parameters.id] });
   };
 
@@ -169,6 +187,23 @@ export default function PracticePage() {
                   <Button type="button" className="mt-5" onClick={nextQuestion}>Next question →</Button>
                 </div>
               )}
+              <Button type="button" className="mt-7" onClick={() => setAiPanelOpen(true)}>Ask AI tutor</Button>
+              {aiPanelOpen && <div className="fixed inset-0 z-50 bg-slate-950/25" onClick={() => setAiPanelOpen(false)} aria-hidden="true" />}
+              <aside className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-l border-blue-200 bg-blue-50 p-6 shadow-2xl transition-transform ${aiPanelOpen ? "translate-x-0" : "translate-x-full"}`} aria-hidden={!aiPanelOpen}>
+                <button type="button" onClick={() => setAiPanelOpen(false)} className="float-right rounded-lg px-3 py-2 font-bold text-blue-900 hover:bg-blue-100" aria-label="Close AI tutor panel">×</button>
+                <h3 className="text-lg font-bold text-blue-950">Ask the AI tutor</h3>
+                <p className="mt-1 text-sm text-blue-900">Get help with this question using the current lesson as context.</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Give me a hint without revealing the answer.", "Explain the key idea step by step.", "Show me a similar example."].map((prompt) => (
+                    <button key={prompt} type="button" onClick={() => setAiPrompt(prompt)} className="rounded-full border border-blue-300 bg-white px-3 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100">{prompt}</button>
+                  ))}
+                </div>
+                <label htmlFor="ai-practice-prompt" className="mt-4 block text-sm font-semibold text-blue-950">Your request</label>
+                <textarea id="ai-practice-prompt" value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} maxLength={2000} rows={2} className="mt-2 w-full rounded-xl border border-blue-300 bg-white p-3 outline-none focus:border-blue-600" />
+                <Button type="button" className="mt-3" disabled={!aiPrompt.trim() || aiHelp.isPending} onClick={() => aiHelp.mutate()}>{aiHelp.isPending ? "Getting help…" : "Ask AI tutor"}</Button>
+                {aiHelp.error && <p role="alert" className="mt-3 text-sm text-red-800">{aiHelp.error instanceof ApiError ? aiHelp.error.message : "Unable to get AI help"}</p>}
+                {aiResponse && <div className="mt-4 rounded-xl bg-white p-4 leading-7 text-slate-800"><p className="mb-1 text-xs font-bold uppercase text-blue-700">AI tutor</p><p className="whitespace-pre-wrap">{aiResponse}</p></div>}
+              </aside>
             </section>
           )}
         </>

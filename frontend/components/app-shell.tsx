@@ -12,6 +12,8 @@ const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: "▦" },
   { href: "/lessons", label: "Lessons", icon: "▤" },
   { href: "/practice", label: "Practice", icon: "✎" },
+  { href: "/chat", label: "AI Tutor", icon: "◇" },
+  { href: "/study-plan", label: "Study Plan", icon: "▣" },
   { href: "/profile", label: "Profile", icon: "○" },
 ];
 
@@ -108,7 +110,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               (item.href.startsWith("/admin/") && pathname.startsWith(`${item.href}/`)) ||
               (item.href === "/lessons" &&
                 pathname.startsWith("/lessons/") &&
-                !pathname.endsWith("/practice"));
+                !pathname.endsWith("/practice")) ||
+              (item.href === "/chat" && pathname.startsWith("/chat/"));
+
             return (
               <Link
                 key={item.href}
