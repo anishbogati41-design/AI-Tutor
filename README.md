@@ -25,8 +25,8 @@ Phase handoff documents record scope, validation, and continuation state:
 | 3 | Topics, lessons, and admin content | Complete |
 | 4 | Questions and adaptive practice records | Complete |
 | 5 | Progress and adaptation | Implemented and verified; awaiting Git approval |
-| 6 | Frontend applications | Not started |
-| 7 | AI tutor and conversations | Not started |
+| 6 | Frontend applications | Implemented and verified; awaiting Git approval |
+| 7 | AI tutor and conversations | On hold |
 | 8 | Study plans | Not started |
 | 9 | Local production readiness | Not started |
 | 10 | Kubernetes and delivery | Not started |
@@ -143,6 +143,29 @@ Stop the environment without removing PostgreSQL data:
 
 ```bash
 docker compose -f compose.phase5.yaml down
+```
+
+## Phase 6 local development
+
+Build and start the Phase 6 frontend, backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase6.yaml up --build -d --wait
+```
+
+The completed frontend surfaces are available at:
+
+- Student dashboard: <http://localhost:3000/dashboard>
+- Administrator sign in: <http://localhost:3000/admin-login>
+- Administrator dashboard: <http://localhost:3000/admin/dashboard>
+- Lesson management: <http://localhost:3000/admin/lessons>
+- Topic management: <http://localhost:3000/admin/topics>
+- Student monitoring: <http://localhost:3000/admin/students>
+
+Stop the environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase6.yaml down
 ```
 
 ## Configuration

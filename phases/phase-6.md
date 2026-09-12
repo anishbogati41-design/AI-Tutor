@@ -1,8 +1,8 @@
 # Phase 6 — Frontend applications
 
-Status: Planned
+Status: Implemented and verified; awaiting Git approval
 
-Owner: Repository owner
+Owner: Primary implementation
 
 ## Goal
 
@@ -64,3 +64,42 @@ Complete the approved student and administrator frontend surfaces that are backe
 ## Git handoff
 
 Do not stage or commit without explicit approval. Do not push or merge unless separately requested.
+
+## Delivered
+
+- A role-aware administrator shell with dashboard, lessons, topics, questions, students, student-view, profile, and logout navigation.
+- An administrator dashboard assembled from the approved student, lesson, and topic APIs.
+- Lesson search, topic filtering, published/draft status, delete confirmation, and links to editing and question management.
+- Lesson creation and editing with subtopic selection, publishing controls, estimated duration, and ordered introduction/explanation/example/summary sections.
+- Topic and subtopic creation, editing, hierarchy selection, and protected deletion.
+- A blueprint-aligned lesson-specific question route that reuses the existing three-type adaptive-practice editor.
+- Quick accessibility controls for saved font size, readable spacing, high contrast, and dyslexia-friendly display.
+- Responsive authenticated navigation and consistent loading, empty, error, success, and confirmation states.
+- A Phase 6 Compose definition and development/production images built with `ai-tutor-builder`.
+
+## Validation results
+
+- Strict TypeScript check: passed.
+- Next.js production build: passed with all 20 application routes generated.
+- Git whitespace/error check: passed.
+- Compose configuration: passed.
+- Administrator login and all eight administrator frontend route smoke checks: passed.
+- Authenticated lessons, topics, and students API smoke checks: passed.
+- Temporary topic, subtopic, lesson, ordered-section, and question CRUD with cleanup: passed.
+- Accessibility preference persistence and restoration: passed.
+- Live PostgreSQL/Redis backend regression suite: 20 passed.
+- Frontend, backend, PostgreSQL, and Redis services: running locally and healthy.
+
+## Local runtime
+
+- Frontend: <http://localhost:3000>
+- Administrator sign in: <http://localhost:3000/admin-login>
+- Administrator dashboard: <http://localhost:3000/admin/dashboard>
+- Lesson management: <http://localhost:3000/admin/lessons>
+- Topic management: <http://localhost:3000/admin/topics>
+- Student monitoring: <http://localhost:3000/admin/students>
+- API documentation: <http://localhost:8000/docs>
+- Backend readiness: <http://localhost:8000/health/ready>
+- Buildx builder: `ai-tutor-builder`
+
+Phase 7 remains on hold. All Phase 6 changes remain unstaged pending explicit approval.

@@ -1,6 +1,6 @@
 # Phase 7 — AI tutor and conversations
 
-Status: Planned
+Status: On hold until Phase 6 is complete
 
 Owner: Collaborating developer
 
