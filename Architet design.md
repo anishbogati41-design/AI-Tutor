@@ -16,6 +16,7 @@ Only approved functionality is in scope. In particular:
 - Recommendations are generated from current learning data and are not stored as a separate resource.
 - AI-generated practice questions are temporary; they are never written to the official question bank.
 - Persistent chat history is retained, but a new AI conversation must not automatically use prior conversations as long-term memory.
+- Paid AI API access is optional and is not required for local development.
 - The MVP has no account-deletion endpoint, autoscaling, Helm, Kustomize, or Redis persistence.
 
 ## 2. System architecture
@@ -40,13 +41,13 @@ FastAPI backend
   |-- AI tutor and AI practice help
   |-- admin content and student-progress APIs
   |
-  +------------------+-------------------+
-  |                  |                   |
-  v                  v                   v
-PostgreSQL        Redis               OpenAI API
-durable data      sessions,           tutor responses,
-                  AI rate limits,     explanation styles,
-                  daily AI counters   temporary practice items
+  +------------------+-------------------+--------------------+
+  |                  |                   |                    |
+  v                  v                   v                    v
+PostgreSQL        Redis          Ollama (default local)  OpenAI (optional)
+durable data      sessions,      local tutor responses,  hosted tutor responses,
+                  AI rate limits, explanation styles,    enabled only when selected
+                  daily AI counters temporary practice items
 ```
 
 ## 3. Technology choices
@@ -63,7 +64,7 @@ durable data      sessions,           tutor responses,
 | API style | REST; Server-Sent Events for streamed AI chat |
 | Primary database | PostgreSQL |
 | In-memory store | Redis |
-| AI provider | OpenAI API |
+| AI provider | Provider-selected through `AIProvider`: Ollama by default for local development; OpenAI optional |
 | Authentication | Email/password plus Redis-backed secure sessions |
 | Logging | Python logging |
 | Background work | FastAPI background tasks |
@@ -192,6 +193,16 @@ Redis has no persistence requirement. PostgreSQL remains the durable system of r
 - Conversation and message records let students reopen prior chats. Old conversations are not injected into a new chat as persistent AI memory.
 - FastAPI background tasks may handle approved asynchronous work, such as producing a study-plan presentation for the student.
 
+### 5.4 AI provider selection
+
+- The backend keeps a single `AIProvider` abstraction and supports `ollama` and `openai` implementations.
+- `AI_PROVIDER` explicitly selects the active implementation. There is no automatic fallback between providers, preventing an Ollama failure from silently causing paid OpenAI usage.
+- Local development defaults to `AI_PROVIDER=ollama` with `OLLAMA_MODEL=qwen3:4b`.
+- `OLLAMA_BASE_URL` identifies the local Ollama endpoint, and `OLLAMA_MODEL` selects the local model.
+- `OPENAI_API_KEY` and `OPENAI_MODEL` apply only when `AI_PROVIDER=openai`. An OpenAI credential is not required when Ollama is active.
+- Both implementations must enforce the same educational instructions, context isolation, configured output limit, safe error handling, and backend-controlled streaming contract.
+- Provider selection does not change the browser contract: FastAPI continues streaming chat replies to the frontend with SSE.
+
 ## 6. Data architecture
 
 ### 6.1 PostgreSQL tables
@@ -298,13 +309,14 @@ Admin lesson editing is section-based. The question editor is a single dynamic f
 
 ## 8. Local development with Docker Compose
 
-Docker Compose includes exactly four services:
+The Phase 7 local Docker Compose environment includes five services:
 
 ```text
 frontend
 backend
 postgres
 redis
+ollama
 ```
 
 Requirements:
@@ -314,11 +326,12 @@ Requirements:
 - PostgreSQL and Redis use explicitly pinned image versions; no `latest` tag.
 - PostgreSQL uses a named persistent volume, `postgres_data`.
 - Redis has no persistence volume.
+- Ollama stores downloaded local model data in a named volume and initially runs `qwen3:4b`.
 - Services use the default Compose network and service names for internal resolution.
 - Separate environment files support local and production configuration.
-- Health checks cover backend, PostgreSQL, and Redis.
+- Health checks cover backend, PostgreSQL, Redis, and the configured local Ollama runtime.
 
-Required configuration values include database connection details, Redis URL, session secret, OpenAI API credential, backend/frontend URLs, application environment, and AI limit settings. Secrets must stay out of source control.
+Required configuration values include database connection details, Redis URL, session secret, backend/frontend URLs, application environment, `AI_PROVIDER`, provider-specific settings, and AI limit settings. Local defaults use `AI_PROVIDER=ollama`, `OLLAMA_BASE_URL`, and `OLLAMA_MODEL=qwen3:4b`. `OPENAI_API_KEY` is required only when `AI_PROVIDER=openai`. Secrets must stay out of source control.
 
 ## 9. Kubernetes deployment
 
@@ -347,6 +360,7 @@ Backend Deployment
 - Redis: deployed inside Kubernetes with a Service; it is not a durable store.
 - PostgreSQL: use a managed PostgreSQL service outside Kubernetes.
 - Store sensitive values in Kubernetes Secrets and non-sensitive settings in a ConfigMap.
+- Set `AI_PROVIDER` in deployment configuration. When `openai` is selected, store `OPENAI_API_KEY` in a Secret. When `ollama` is selected, provide a reachable `OLLAMA_BASE_URL`; deployment of an Ollama runtime in Kubernetes requires separate infrastructure approval and resource planning.
 - Use HTTPS/TLS at the Ingress.
 - Run database migrations as a Kubernetes Job before or as part of each application deployment.
 
@@ -425,6 +439,8 @@ Each phase has its own file under `phases/`. That file records the approved scop
 ### Phase 7 — AI tutor and conversations
 
 - Add persistent conversations, SSE AI chat, practice-specific AI help, explanation styles, and educational-only safeguards.
+- Keep the `AIProvider` abstraction, add Ollama and OpenAI implementations, select them explicitly with `AI_PROVIDER`, and default local development to Ollama with `qwen3:4b`.
+- Keep OpenAI optional; require `OPENAI_API_KEY` only when `AI_PROVIDER=openai`, with no automatic provider fallback.
 - Enforce short-window rate limits, daily usage counters, and per-answer token limits.
 - Keep generated practice questions temporary and prevent old conversations from becoming automatic long-term memory.
 
@@ -435,7 +451,7 @@ Each phase has its own file under `phases/`. That file records the approved scop
 
 ### Phase 9 — Local production readiness
 
-- Complete the four-service Docker Compose environment, pinned images, health checks, environment separation, and production execution setups.
+- Complete the five-service Docker Compose environment, including the default local Ollama runtime and model volume, pinned images, health checks, environment separation, and production execution setups.
 
 ### Phase 10 — Kubernetes and delivery
 
