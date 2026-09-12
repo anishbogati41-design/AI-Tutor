@@ -36,3 +36,14 @@ class LoginRequest(BaseModel):
         if not value or len(value) > 128:
             raise ValueError("password must contain 1 to 128 characters")
         return value
+
+
+class AdminLoginRequest(LoginRequest):
+    pin: str
+
+    @field_validator("pin")
+    @classmethod
+    def validate_pin(cls, value: str) -> str:
+        if len(value) < 4 or len(value) > 64:
+            raise ValueError("pin must contain 4 to 64 characters")
+        return value

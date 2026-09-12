@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,7 +37,7 @@ export default function LoginPage() {
       }),
     onSuccess: (user) => {
       queryClient.setQueryData(["current-user"], user);
-      router.replace("/lessons");
+      router.replace("/dashboard");
       router.refresh();
     },
   });
@@ -95,6 +96,7 @@ export default function LoginPage() {
           {login.isPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+      <Link href="/admin-login" className="mt-5 block text-center text-sm font-semibold text-slate-600 hover:text-blue-800">Administrator sign in</Link>
     </AuthCard>
   );
 }

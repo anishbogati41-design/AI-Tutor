@@ -11,7 +11,7 @@ from backend.auth.dependencies import (
     get_redis_store,
 )
 from backend.auth.passwords import DUMMY_PASSWORD_HASH, hash_password, verify_password
-from backend.auth.schemas import LoginRequest, RegisterRequest
+from backend.auth.schemas import AdminLoginRequest, LoginRequest, RegisterRequest
 from backend.config import Settings, get_settings
 from backend.database.connection import Database
 from backend.redis_store.client import RedisStore
@@ -20,6 +20,27 @@ from backend.users.repository import EmailAlreadyExistsError, UserRepository
 from backend.users.schemas import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+
+async def _set_session(
+    response: Response,
+    user: UserRecord,
+    redis_store: RedisStore,
+    settings: Settings,
+) -> None:
+    session_id = secrets.token_urlsafe(32)
+    await redis_store.set_session(
+        session_id, user.id, user.is_admin, settings.session_ttl_seconds
+    )
+    response.set_cookie(
+        key=settings.session_cookie_name,
+        value=session_id,
+        max_age=settings.session_ttl_seconds,
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite="strict",
+        path="/",
+    )
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -58,23 +79,42 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+    if user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator accounts must use administrator sign in",
+        )
 
-    session_id = secrets.token_urlsafe(32)
-    await redis_store.set_session(
-        session_id,
-        user.id,
-        user.is_admin,
-        settings.session_ttl_seconds,
+    await _set_session(response, user, redis_store, settings)
+    return user
+
+
+@router.post("/admin-login", response_model=UserResponse)
+async def admin_login(
+    payload: AdminLoginRequest,
+    response: Response,
+    database: Database = Depends(get_database),
+    redis_store: RedisStore = Depends(get_redis_store),
+    settings: Settings = Depends(get_settings),
+) -> UserRecord:
+    if settings.admin_login_pin is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Administrator sign in is not configured",
+        )
+    user = await UserRepository(database).get_by_email(payload.email)
+    password_valid = await run_in_threadpool(
+        verify_password,
+        payload.password,
+        user.password_hash if user is not None else DUMMY_PASSWORD_HASH,
     )
-    response.set_cookie(
-        key=settings.session_cookie_name,
-        value=session_id,
-        max_age=settings.session_ttl_seconds,
-        httponly=True,
-        secure=settings.cookie_secure,
-        samesite="strict",
-        path="/",
-    )
+    pin_valid = secrets.compare_digest(payload.pin, settings.admin_login_pin)
+    if user is None or not user.is_admin or not password_valid or not pin_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid administrator credentials",
+        )
+    await _set_session(response, user, redis_store, settings)
     return user
 
 

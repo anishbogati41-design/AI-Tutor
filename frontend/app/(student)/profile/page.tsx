@@ -83,7 +83,7 @@ export default function ProfilePage() {
         ["current-user"],
         (user) => (user ? { ...user, ...preferences } : user),
       );
-      router.push("/lessons");
+      router.push("/dashboard");
     },
   });
 

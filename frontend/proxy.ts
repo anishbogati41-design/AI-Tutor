@@ -7,19 +7,18 @@ export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isAuthRoute =
     request.nextUrl.pathname === "/login" ||
+    request.nextUrl.pathname === "/admin-login" ||
     request.nextUrl.pathname === "/register";
 
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/profile") ||
+    request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/lessons") ||
     request.nextUrl.pathname.startsWith("/practice") ||
-    request.nextUrl.pathname.startsWith("/admin");
+    (request.nextUrl.pathname.startsWith("/admin") && !isAuthRoute);
 
   if (isProtectedRoute && !hasSession) {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-  if (isAuthRoute && hasSession) {
-    return NextResponse.redirect(new URL("/lessons", request.url));
   }
   return NextResponse.next();
 }
@@ -27,9 +26,11 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/login",
+    "/admin-login",
     "/register",
     "/profile/:path*",
     "/lessons/:path*",
+    "/dashboard/:path*",
     "/practice/:path*",
     "/admin/:path*",
   ],

@@ -9,7 +9,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError, apiRequest } from "@/lib/api";
-import type { AnswerResult, PracticeSession } from "@/types/content";
+import type { AdaptiveQuestion, AnswerResult, PracticeSession } from "@/types/content";
 
 function difficultyLabel(score: number) {
   if (score < 34) return "Foundational";
@@ -20,7 +20,6 @@ function difficultyLabel(score: number) {
 export default function PracticePage() {
   const parameters = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const [questionIndex, setQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [sessionCounts, setSessionCounts] = useState({ correct: 0, total: 0 });
@@ -28,7 +27,11 @@ export default function PracticePage() {
     queryKey: ["practice", parameters.id],
     queryFn: () => apiRequest<PracticeSession>(`/lessons/${parameters.id}/practice`),
   });
-  const question = practice.data?.questions[questionIndex];
+  const adaptive = useQuery({
+    queryKey: ["next-practice-question", parameters.id],
+    queryFn: () => apiRequest<AdaptiveQuestion>(`/lessons/${parameters.id}/practice/next`),
+  });
+  const question = adaptive.data?.question;
   const submit = useMutation({
     mutationFn: () =>
       apiRequest<AnswerResult>(`/practice/${question?.id}/answer`, {
@@ -42,22 +45,21 @@ export default function PracticePage() {
         total: counts.total + 1,
       }));
       queryClient.invalidateQueries({ queryKey: ["practice", parameters.id] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
   });
 
   useEffect(() => {
-    setQuestionIndex(0);
     setAnswer("");
     setResult(null);
     setSessionCounts({ correct: 0, total: 0 });
   }, [parameters.id]);
 
   const nextQuestion = () => {
-    const questionCount = practice.data?.questions.length ?? 0;
-    setQuestionIndex((index) => (index + 1) % questionCount);
     setAnswer("");
     setResult(null);
     submit.reset();
+    queryClient.invalidateQueries({ queryKey: ["next-practice-question", parameters.id] });
   };
 
   return (
@@ -69,6 +71,11 @@ export default function PracticePage() {
       {practice.error && (
         <p role="alert" className="mt-8 rounded-xl bg-red-50 p-4 text-red-800">
           {practice.error instanceof ApiError ? practice.error.message : "Unable to load practice"}
+        </p>
+      )}
+      {adaptive.error && !practice.error && (
+        <p role="alert" className="mt-8 rounded-xl bg-red-50 p-4 text-red-800">
+          {adaptive.error instanceof ApiError ? adaptive.error.message : "Unable to load the next question"}
         </p>
       )}
       {practice.data && (
@@ -83,7 +90,9 @@ export default function PracticePage() {
             </div>
           </header>
 
-          {!question ? (
+          {adaptive.isPending ? (
+            <p className="mt-8 text-slate-600">Selecting your next question…</p>
+          ) : !question ? (
             <section className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
               <h2 className="text-xl font-bold">No practice questions yet</h2>
               <p className="mt-2 text-slate-600">Questions for this lesson are still being prepared.</p>
@@ -94,8 +103,8 @@ export default function PracticePage() {
           ) : (
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-9">
               <div className="flex flex-wrap justify-between gap-3 text-sm text-slate-500">
-                <span>Question {questionIndex + 1} of {practice.data.questions.length}</span>
-                <span>{difficultyLabel(question.difficulty_score)}</span>
+                <span>{adaptive.data?.mastery_label.toLowerCase()} mastery · {adaptive.data?.mastery_percentage}%</span>
+                <span>{difficultyLabel(question.difficulty_score)} · target {adaptive.data?.target_difficulty}</span>
               </div>
               <h2 className="mt-6 text-2xl font-bold leading-9">{question.question_text}</h2>
 

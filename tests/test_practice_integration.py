@@ -39,6 +39,22 @@ def test_question_crud_answer_evaluation_and_practice_summary() -> None:
             assert client.post(
                 "/auth/login",
                 json={"email": admin_email, "password": "admin-password"},
+            ).status_code == 403
+            assert client.post(
+                "/auth/admin-login",
+                json={
+                    "email": admin_email,
+                    "password": "admin-password",
+                    "pin": "incorrect-pin",
+                },
+            ).status_code == 401
+            assert client.post(
+                "/auth/admin-login",
+                json={
+                    "email": admin_email,
+                    "password": "admin-password",
+                    "pin": settings.admin_login_pin,
+                },
             ).status_code == 200
             admin_session = client.cookies.get(settings.session_cookie_name)
             assert admin_session
@@ -160,8 +176,39 @@ def test_question_crud_answer_evaluation_and_practice_summary() -> None:
             assert summary["total_count"] == 2
             assert summary["accuracy"] == 50.0
 
+            adaptive = client.get(f"/lessons/{ids['lesson']}/practice/next")
+            assert adaptive.status_code == 200
+            assert adaptive.json()["mastery_percentage"] == 50.0
+            assert adaptive.json()["mastery_label"] == "INTERMEDIATE"
+            assert adaptive.json()["target_difficulty"] == 60.0
+            assert "explanation" not in adaptive.json()["question"]
+            assert all(
+                "is_correct" not in option
+                for option in adaptive.json()["question"]["options"]
+            )
+
+            progress = client.get("/progress")
+            assert progress.status_code == 200
+            assert progress.json()["overall_score"] == 50.0
+            assert progress.json()["topic_accuracy"][0]["attempt_count"] == 2
+            assert progress.json()["mastery"][0]["mastery_label"] == "INTERMEDIATE"
+            assert progress.json()["weak_topics"][0]["accuracy"] == 50.0
+            assert progress.json()["study_plan_preview"] == []
+            assert client.get("/admin/students").status_code == 403
+
             client.cookies.clear()
             client.cookies.set(settings.session_cookie_name, admin_session)
+            students = client.get("/admin/students")
+            assert students.status_code == 200
+            assert any(student["id"] == ids["student"] for student in students.json())
+            student_progress = client.get(
+                f"/admin/students/{ids['student']}/progress"
+            )
+            assert student_progress.status_code == 200
+            assert student_progress.json()["student"]["id"] == ids["student"]
+            assert student_progress.json()["progress"]["overall_score"] == 50.0
+            course = student_progress.json()["progress"]["course_progress"]
+            assert any(item["lesson_id"] == ids["lesson"] for item in course)
             assert client.delete(
                 f"/admin/lessons/{ids['lesson']}/questions/{ids['short']}"
             ).status_code == 204

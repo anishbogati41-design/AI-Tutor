@@ -35,6 +35,7 @@ Implementation status values:
 |---|---|---|---:|---|---|
 | `POST` | `/auth/register` | Public | 2 | Implemented | Create a student account with email and password. |
 | `POST` | `/auth/login` | Public | 2 | Implemented | Authenticate credentials, create a Redis session, and set the secure session cookie. |
+| `POST` | `/auth/admin-login` | Public | 5 | Implemented | Authenticate an administrator with email, password, and the private server-configured PIN, then create the same secure Redis-backed session cookie. |
 | `POST` | `/auth/logout` | Session | 2 | Implemented | Delete the Redis session and clear the session cookie. |
 | `GET` | `/auth/me` | Session | 2 | Implemented | Resolve the current authenticated identity and administrator flag. |
 
@@ -61,17 +62,19 @@ Implementation status values:
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `GET` | `/lessons/{id}/practice` | Session | 4 | Planned | Return adaptive-practice information for a lesson. |
-| `GET` | `/lessons/{id}/practice/next` | Session | 5 | Planned | Select the next practice question using topic mastery and the appropriate difficulty band. |
-| `POST` | `/practice/{question_id}/answer` | Session | 4 | Planned | Evaluate an answer, return correctness and explanation, and update the practice summary. |
+| `GET` | `/lessons/{id}/practice` | Session | 4 | Implemented | Return the lesson's official practice questions and the current user's durable summary. Student payloads omit solutions; administrators receive the fields needed for editing. |
+| `GET` | `/lessons/{id}/practice/next` | Session | 5 | Implemented | Select the next practice question using topic mastery and the appropriate difficulty band. Student payloads omit solutions. |
+| `POST` | `/practice/{question_id}/answer` | Session | 4 | Implemented | Evaluate a normalized answer, return correctness and explanation, and update the practice summary. |
 
 Practice questions support only `MCQ`, `TRUE_FALSE`, and `SHORT_ANSWER`. AI-generated practice questions remain temporary and are never added to the official question bank.
+
+Submitting an answer updates the lesson summary, current topic mastery, weak-topic state, and the answered question's global difficulty. The score uses the blueprint's 60% incorrect-rate, 25% response-time, and 15% reliability weights. Because the approved durable schema has no response-time or per-question attempt record, Phase 5 uses a neutral `0.5` response-time factor and the lesson's aggregate attempts for reliability; it does not introduce an unapproved history table.
 
 ## Progress endpoint
 
 | Method | Path | Access | Phase | Status | Purpose |
 |---|---|---|---:|---|---|
-| `GET` | `/progress` | Session | 5 | Planned | Return the combined dashboard payload: score, topic accuracy, mastery, weak topics, recent improvement, and study-plan preview. |
+| `GET` | `/progress` | Session | 5 | Implemented | Return the combined dashboard payload: score, topic accuracy, mastery, weak topics, recent improvement, and study-plan preview. Recent improvement is `0` until approved historical attempt data exists; the preview reads existing study-plan items and is empty before Phase 8 creates a plan. |
 
 ## Study-plan endpoints
 
@@ -109,18 +112,18 @@ Both AI endpoints are subject to the per-user short-window request limit, daily 
 | `POST` | `/admin/topics` | Admin | 3 | Implemented | Create a topic or subtopic. |
 | `PUT` | `/admin/topics/{id}` | Admin | 3 | Implemented | Update a topic or subtopic while preventing hierarchy cycles. |
 | `DELETE` | `/admin/topics/{id}` | Admin | 3 | Implemented | Delete a topic when its relationships allow deletion. |
-| `POST` | `/admin/lessons/{id}/questions` | Admin | 4 | Planned | Create an adaptive-practice question for a lesson. |
-| `PUT` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Planned | Update an adaptive-practice question. |
-| `DELETE` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Planned | Delete an adaptive-practice question. |
-| `GET` | `/admin/students` | Admin | 5 | Planned | List students for the small admin area. |
-| `GET` | `/admin/students/{id}/progress` | Admin | 5 | Planned | Return progress information for one student. |
+| `POST` | `/admin/lessons/{id}/questions` | Admin | 4 | Implemented | Create an adaptive-practice question for a lesson. |
+| `PUT` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Implemented | Update an adaptive-practice question and atomically replace its options. |
+| `DELETE` | `/admin/lessons/{id}/questions/{question_id}` | Admin | 4 | Implemented | Delete an adaptive-practice question. |
+| `GET` | `/admin/students` | Admin | 5 | Implemented | List students for the small admin area. |
+| `GET` | `/admin/students/{id}/progress` | Admin | 5 | Implemented | Return the student's identity and combined progress, including lesson/course attempts, accuracy, and practice progression. |
 
 ## Endpoint count
 
 - 2 implemented service endpoints.
 - 4 generated documentation endpoints.
-- 19 implemented product endpoints.
-- 18 planned product endpoints.
-- 43 endpoint paths in total.
+- 29 implemented product endpoints.
+- 9 planned product endpoints.
+- 44 endpoint paths in total.
 
 No quiz, account-deletion, recommendation-resource, text-to-speech, teacher-portal, or expanded role-management endpoint is approved.

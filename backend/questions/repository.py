@@ -19,6 +19,10 @@ class QuestionRepository:
     def __init__(self, database: Database) -> None:
         self._database = database
 
+    @property
+    def database(self) -> Database:
+        return self._database
+
     async def get_practice_session(
         self, lesson_id: int, user_id: int, *, include_drafts: bool
     ) -> PracticeSessionRecord | None:

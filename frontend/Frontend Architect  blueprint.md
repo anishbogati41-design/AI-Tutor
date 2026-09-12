@@ -1238,11 +1238,11 @@ text
 │  │ → question.question_text                                    │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 │                                                                  │
-│  ┌────────────────────┐  ┌────────────────────┐                  │
-│  │ Type:   MCQ    ▼   │  │ Usage: Practice ▼  │                  │
-│  │ MCQ | TRUE_FALSE   │  │ PRACTICE | QUIZ    │                  │
-│  │ | SHORT_ANSWER     │  │                    │                  │
-│  └────────────────────┘  └────────────────────┘                  │
+│  ┌────────────────────┐                                          │
+│  │ Type:   MCQ    ▼   │  Questions are always adaptive practice │
+│  │ MCQ | TRUE_FALSE   │                                          │
+│  │ | SHORT_ANSWER     │                                          │
+│  └────────────────────┘                                          │
 │                                                                  │
 │  ┌────────────────────┐                                          │
 │  │ Topic:  Algebra ▼  │  → question.topic_id                     │

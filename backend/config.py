@@ -39,6 +39,9 @@ class Settings:
     cookie_secure: bool
     backend_url: str
     frontend_url: str
+    admin_login_pin: str | None
+    admin_seed_email: str | None
+    admin_seed_password: str | None
     openai_api_key: str | None
     ai_rate_limit_requests: int
     ai_rate_limit_window_seconds: int
@@ -77,6 +80,9 @@ class Settings:
             cookie_secure=cookie_secure,
             backend_url=os.getenv("BACKEND_URL", "http://localhost:8000"),
             frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3000"),
+            admin_login_pin=os.getenv("ADMIN_LOGIN_PIN") or None,
+            admin_seed_email=os.getenv("ADMIN_SEED_EMAIL") or None,
+            admin_seed_password=os.getenv("ADMIN_SEED_PASSWORD") or None,
             openai_api_key=os.getenv("OPENAI_API_KEY") or None,
             ai_rate_limit_requests=_integer("AI_RATE_LIMIT_REQUESTS", 10),
             ai_rate_limit_window_seconds=_integer(

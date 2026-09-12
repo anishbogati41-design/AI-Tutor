@@ -4,10 +4,24 @@ import logging
 
 import psycopg
 
+from backend.auth.passwords import hash_password
 from backend.config import get_settings
 from backend.logging.config import configure_logging
 
 logger = logging.getLogger(__name__)
+
+
+def _seed_admin(connection: psycopg.Connection, email: str, password: str) -> None:
+    password_hash = hash_password(password)
+    connection.execute(
+        """
+        INSERT INTO users (name, email, password_hash, is_admin)
+        VALUES ('Local Administrator', %s, %s, TRUE)
+        ON CONFLICT (email) DO UPDATE
+        SET is_admin = TRUE, password_hash = EXCLUDED.password_hash
+        """,
+        (email.strip().lower(), password_hash),
+    )
 
 
 def _topic_id(
@@ -225,6 +239,10 @@ def seed() -> None:
         raise RuntimeError("Local starter content can only be seeded in development")
     configure_logging(settings.log_level)
     with psycopg.connect(settings.database_url) as connection:
+        if settings.admin_seed_email and settings.admin_seed_password:
+            _seed_admin(
+                connection, settings.admin_seed_email, settings.admin_seed_password
+            )
         mathematics_id = _topic_id(
             connection,
             "Mathematics",
@@ -240,7 +258,7 @@ def seed() -> None:
         lesson_id = _lesson_id(connection, algebra_id)
         _seed_sections(connection, lesson_id)
         _seed_questions(connection, lesson_id, algebra_id)
-    logger.info("Local starter lesson and practice questions are ready")
+    logger.info("Local starter content and configured administrator are ready")
 
 
 if __name__ == "__main__":

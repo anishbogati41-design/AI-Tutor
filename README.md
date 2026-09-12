@@ -13,14 +13,18 @@ Phase handoff documents record scope, validation, and continuation state:
 - [Phase 1 — Backend and persistence foundation](phases/phase-1.md)
 - [Phase 2 — Authentication, users, and frontend auth surface](phases/phase-2.md)
 - [Phase 3 — Topics, lessons, and admin content](phases/phase-3.md)
+- [Phase 4 — Questions and adaptive practice records](phases/phase-4.md)
+- [Phase 5 — Progress and adaptation](phases/phase-5.md)
+- [Phase 6 — Frontend applications](phases/phase-6.md)
+- [Phase 7 — AI tutor and conversations](phases/phase-7.md)
 
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Backend and persistence foundation | Complete |
 | 2 | Authentication, users, and frontend auth surface | Complete |
-| 3 | Topics, lessons, and admin content | Implemented and verified; awaiting Git approval |
-| 4 | Questions and adaptive practice records | Not started |
-| 5 | Progress and adaptation | Not started |
+| 3 | Topics, lessons, and admin content | Complete |
+| 4 | Questions and adaptive practice records | Complete |
+| 5 | Progress and adaptation | Implemented and verified; awaiting Git approval |
 | 6 | Frontend applications | Not started |
 | 7 | AI tutor and conversations | Not started |
 | 8 | Study plans | Not started |
@@ -94,11 +98,60 @@ Stop the environment without removing PostgreSQL data:
 docker compose -f compose.phase3.yaml down
 ```
 
+## Phase 4 local development
+
+Build and start the Phase 4 frontend, backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase4.yaml up --build -d --wait
+```
+
+The Phase 4 interfaces are available at:
+
+- Practice library: <http://localhost:3000/practice>
+- Practice session: `http://localhost:3000/lessons/{id}/practice`
+- Administrator question manager: <http://localhost:3000/admin/questions>
+- API documentation: <http://localhost:8000/docs>
+- Backend readiness: <http://localhost:8000/health/ready>
+
+The development backend seeds one published algebra lesson with four sections and three practice questions. The seed is idempotent, runs only in development, and is never invoked by the production image.
+
+Stop the environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase4.yaml down
+```
+
+## Phase 5 local development
+
+Build and start the Phase 5 frontend, backend, PostgreSQL, and Redis:
+
+```bash
+docker compose -f compose.phase5.yaml up --build -d --wait
+```
+
+The Phase 5 interfaces are available at:
+
+- Student dashboard: <http://localhost:3000/dashboard>
+- Adaptive practice library: <http://localhost:3000/practice>
+- Administrator sign in: <http://localhost:3000/admin-login>
+- Administrator students: <http://localhost:3000/admin/students>
+- API documentation: <http://localhost:8000/docs>
+- Backend readiness: <http://localhost:8000/health/ready>
+
+Stop the environment without removing PostgreSQL data:
+
+```bash
+docker compose -f compose.phase5.yaml down
+```
+
 ## Configuration
 
 `.env.example` contains safe local defaults. `.env.production.example` lists production inputs without values for secrets. Real `.env` files are ignored by Git.
 
 PostgreSQL is the durable system of record. Redis is restricted to opaque sessions, short-window AI request counters, and daily AI usage counters; Redis persistence is disabled.
+
+Administrator sign-in requires email, password, and `ADMIN_LOGIN_PIN`. Local administrator credentials may be seeded with `ADMIN_SEED_EMAIL` and `ADMIN_SEED_PASSWORD`. Their values belong in the ignored `.env` file or deployment secrets and must never be committed.
 
 ## Repository workflow
 

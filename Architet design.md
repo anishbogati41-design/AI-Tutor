@@ -162,7 +162,7 @@ Question-specific logic, including evaluation, stays in `questions/`. Adaptive s
 ### 5.1 Authentication and sessions
 
 1. Register with email and password.
-2. Authenticate credentials on login.
+2. Authenticate student credentials on the student login route. Administrator accounts use the dedicated administrator login and must also supply the server-configured private PIN.
 3. Create a Redis session containing `user_id` and the admin flag.
 4. Return the opaque session identifier in a secure session cookie.
 5. Resolve the cookie on protected requests and enforce admin access where required.
@@ -229,6 +229,7 @@ All endpoints are served by FastAPI. The frontend consumes them through the fetc
 ```text
 POST /auth/register
 POST /auth/login
+POST /auth/admin-login
 POST /auth/logout
 GET  /auth/me
 
@@ -406,11 +407,15 @@ Each phase has its own file under `phases/`. That file records the approved scop
 - Implement practice questions, options, answer evaluation, and practice summaries.
 - Support `MCQ`, `TRUE_FALSE`, and `SHORT_ANSWER` without any quiz resource or workflow.
 - Implement administrator question CRUD.
+- Connect the frontend to student practice and administrator question-management workflows.
 
 ### Phase 5 — Progress and adaptation
 
 - Implement mastery labels, weak-topic updates, global question-difficulty calculation, and adaptive next-question selection.
 - Implement the combined student progress payload and admin student-progress APIs.
+- Connect the frontend dashboard, one-question-at-a-time adaptive practice flow, and administrator student-progress views to the Phase 5 APIs.
+- Require administrators to use a dedicated email, password, and private-PIN login. Keep the PIN in deployment environment configuration and never in the repository.
+- Show lesson-level practice activity, accuracy, and progression in the administrator student view using the approved practice summary records.
 
 ### Phase 6 — Frontend applications
 

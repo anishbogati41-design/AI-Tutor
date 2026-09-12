@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from backend.adaptive.service import AdaptiveService
 from backend.lessons.repository import LessonRepository
 from backend.questions.models import QuestionRecord
 from backend.questions.repository import QuestionRepository
@@ -84,6 +85,9 @@ class QuestionService:
         )
         await self._questions.record_answer(
             user_id, question.lesson_id, is_correct=is_correct
+        )
+        await AdaptiveService(self._questions.database).update_after_answer(
+            user_id, question.lesson_id, question.id
         )
         return AnswerResponse(
             is_correct=is_correct,

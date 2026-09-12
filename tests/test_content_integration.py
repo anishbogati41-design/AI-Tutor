@@ -41,8 +41,12 @@ def test_topic_lesson_visibility_and_admin_crud() -> None:
 
         with TestClient(app) as client:
             admin_login = client.post(
-                "/auth/login",
-                json={"email": admin_email, "password": "admin-password"},
+                "/auth/admin-login",
+                json={
+                    "email": admin_email,
+                    "password": "admin-password",
+                    "pin": settings.admin_login_pin,
+                },
             )
             assert admin_login.status_code == 200
             admin_session = client.cookies.get(settings.session_cookie_name)

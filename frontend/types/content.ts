@@ -68,3 +68,10 @@ export type AnswerResult = {
   correct_answer: string;
   explanation: string;
 };
+
+export type AdaptiveQuestion = {
+  mastery_percentage: number;
+  mastery_label: string;
+  target_difficulty: number;
+  question: PracticeQuestion;
+};
